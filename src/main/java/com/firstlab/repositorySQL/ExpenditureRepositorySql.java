@@ -8,9 +8,12 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ExpenditureRepositorySql extends JpaRepository<ExpenditureSql, Long> {
+
+    Optional<ExpenditureSql> findByTittle(String tittle);
 
     @Query(value = "select * from Expenditure_Sql e", nativeQuery = true)
     List<ExpenditureSql> findAll();

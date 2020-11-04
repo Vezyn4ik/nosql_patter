@@ -3,23 +3,33 @@ package com.firstlab;
 import com.firstlab.jpa.Expenditure;
 import com.firstlab.jpa.Firm;
 import com.firstlab.jpa.Realm;
+import com.firstlab.jpa.Staff;
 import com.firstlab.jpa.sql.ExpenditureSql;
 import com.firstlab.jpa.sql.FirmSql;
 import com.firstlab.jpa.sql.RealmSql;
+import com.firstlab.jpa.sql.StaffSql;
 import com.firstlab.map.Mapper;
 import com.firstlab.map.create.CreateExpenditureMapper;
 import com.firstlab.map.create.CreateFirmMapper;
 import com.firstlab.map.create.CreateMapper;
+import com.firstlab.migration.MongoSql;
+import com.firstlab.migration.SqlMongo;
 import com.firstlab.repository.ExpenditureRepository;
 import com.firstlab.repository.FirmRepository;
 import com.firstlab.repository.RealmRepository;
+import com.firstlab.repository.StaffRepository;
 import com.firstlab.repositorySQL.ExpenditureRepositorySql;
 import com.firstlab.repositorySQL.FirmRepositorySql;
 import com.firstlab.repositorySQL.RealmRepositorySql;
+import com.firstlab.repositorySQL.StaffRepositorySql;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.stereotype.Repository;
 
 //@EnableMongoRepositories(basePackageClasses = FirmRepository.class) //,RealmRepository.class,ExpenditureRepository.class)
 //@EnableJpaRepositories(basePackageClasses = FirmRepositorySql.class)
@@ -31,13 +41,18 @@ public class FirstlabApplication implements CommandLineRunner {
     private RealmRepository realmRepository;
     @Autowired
     private ExpenditureRepository expenditureRepository;
-
+    @Autowired
+    private StaffRepository staffRepository;
+    
     @Autowired
     private FirmRepositorySql firmRepositorySql;
     @Autowired
     private ExpenditureRepositorySql expenditureRepositorySql;
     @Autowired
     private RealmRepositorySql realmRepositorySql;
+    @Autowired
+    private StaffRepositorySql staffRepositorySql;
+    
     public static void main(String[] args) {
         SpringApplication.run(FirstlabApplication.class, args);
     }
@@ -46,7 +61,7 @@ public class FirstlabApplication implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
 //test mongodb
-        realmRepository.save(new Realm("heelo","descr"));
+       /* realmRepository.save(new Realm("heelo","descr"));
         //add
       //  firmRepository.insert(new Firm.Builder("АВТОМАГИСТРАЛЬ-ЮГ", (long) 241745765, "Николай Тимофеев").address("Киев, ул. Воробина").build());
 
@@ -109,7 +124,7 @@ firmRepository.insert(new Firm.Builder("АВТОМАГИСТРАЛЬ", (long) 24
 
         System.out.println(fe2.convertToDocument(fe2.convertToDto(f2)));
 
-
+*/
 
         // time test
 /*
@@ -189,7 +204,38 @@ firmRepository.insert(new Firm.Builder("АВТОМАГИСТРАЛЬ", (long) 24
         System.out.println("Sql , Expenditure delete by tittle");
         expenditureRepositorySql.deleteByTittle("Расходы на постройку дороги на участке Н-13");
         */
+ /*       Firm f=new Firm.Builder("АВТОМАГИСТРАЛЬ-ЮГ", (long) 241745765, "Николай Тимофеев").address("Киев, ул. Воробина").build();
 
-    }
+        firmRepository.save(f);
+        firmRepository.save(new Firm.Builder("АВТОМАГИСТРАЛЬ", (long) 241575, "Николай Тищук").contactNumber("+380950751655").build());
+
+        realmRepository.save(new Realm.Builder("Инфраструктура")
+                .description(" комплекс взаимосвязанных обслуживающих структур обеспечивающих основу функционирования системы").build());
+        expenditureRepository.save(new Expenditure.Builder("Расходы на постройку дороги на участке Н-32 Днепр — Решетиловка", 30101).
+                firm(new Firm.Builder("АВТОМАГИСТРАЛЬ-ЮГ", (long) 241745765, "Николай Тимофеев").address("Киев, ул. Воробина").build())
+                .realm(new Realm.Builder("Инфраструктура").build()).build());
+
+        staffRepository.save(new Staff("Vlad", "manager", "vlad@nure.ua", (long)125323, 50000, "descr",f));
+*/
+        MongoRepository mongoRepositories[]={firmRepository,realmRepository,expenditureRepository,staffRepository};
+        JpaRepository jpaRepositories[]={firmRepositorySql,realmRepositorySql,expenditureRepositorySql,staffRepositorySql};
+       /* MongoSql test = new MongoSql(firmRepository,realmRepository,expenditureRepository,staffRepository,
+                firmRepositorySql,expenditureRepositorySql,realmRepositorySql,staffRepositorySql);
+        test.convertMongoToSql(mongoRepositories);
+
+        FirmSql f=new FirmSql.Builder("АВТОМАГИСТРАЛЬ-Север3", (long) 241745765, "Николай Тимофеев").address("Киев, ул. Воробина").build();
+
+        firmRepositorySql.save(f);
+        RealmSql r =new RealmSql.Builder("Инфраструктура,дороги")
+                .description(" комплекс взаимосвязанных обслуживающих структур обеспечивающих основу функционирования системы").build();
+        realmRepositorySql.save(r);
+        expenditureRepositorySql.save(new ExpenditureSql.Builder("Расходы на постройку дороги на участке Н-35 Днепр — Харьков", 30101).
+                firm(f).realm(r).build());
+
+        staffRepositorySql.save(new StaffSql("Василий", "manager", "vlad@nure.ua", (long)125323, 50000, "descr",f));
+      */ SqlMongo test = new SqlMongo(firmRepository,realmRepository,expenditureRepository,staffRepository,
+                firmRepositorySql,expenditureRepositorySql,realmRepositorySql,staffRepositorySql);
+        test.convertSqlToMongo(jpaRepositories);
+}
 
 }

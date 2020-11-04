@@ -15,10 +15,12 @@ public class ExpenditureSql {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(name = "tittle",nullable = false)
+    @Column(name = "tittle",nullable = false,unique = true)
     private String tittle;
-    @Column(name = "money",nullable = true)
+    @Column(name = "money",nullable = false)
     private Integer money;
+    @Column(name = "description",nullable = true)
+    private String description;
 
   @ManyToOne
     @JsonIgnore
@@ -29,6 +31,14 @@ public class ExpenditureSql {
     @JsonIgnore
     @JoinColumn(name="realm_id", nullable=false)
     private RealmSql realmSql;
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
     public Long getId() {
         return id;
@@ -116,5 +126,13 @@ public class ExpenditureSql {
     }
 
     public ExpenditureSql() {
+    }
+
+    public ExpenditureSql(String tittle, Integer money, String description, FirmSql firmSql, RealmSql realmSql) {
+        this.tittle = tittle;
+        this.money = money;
+        this.description = description;
+        this.firmSql = firmSql;
+        this.realmSql = realmSql;
     }
 }

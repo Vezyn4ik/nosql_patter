@@ -12,7 +12,7 @@ public class FirmSql {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(name = "name",nullable = false)
+    @Column(name = "name",nullable = false,unique=true)
     private String name;
 
     @Column(name = "address",nullable = true)
@@ -26,10 +26,23 @@ public class FirmSql {
     @Column(name = "indetification_number",nullable = true)
     private Long indetification_number;
 
+    @OneToMany(mappedBy = "firmSql")
+    private List<StaffSql> staffSql;
+
     @OneToMany(mappedBy="firmSql",cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ExpenditureSql> expenditureSql;
 
     public FirmSql() {
+    }
+
+    public FirmSql(String name, String address, String contactNumber, String manager, Integer year, Long indetification_number) {
+
+        this.name = name;
+        this.address = address;
+        this.contactNumber = contactNumber;
+        this.manager = manager;
+        this.year = year;
+        this.indetification_number = indetification_number;
     }
 
     public FirmSql(String name, String manager, Long indetification_number) {

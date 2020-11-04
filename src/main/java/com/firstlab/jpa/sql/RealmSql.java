@@ -16,7 +16,7 @@ public class RealmSql {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(name = "tittle",nullable = false)
+    @Column(name = "tittle",nullable = false,unique = true)
     private String tittle;
 
     @Column(name = "description",nullable = true)
@@ -91,7 +91,13 @@ public class RealmSql {
         description = builder.description;
     }
 
+    public RealmSql(String tittle, String description) {
+        this.tittle = tittle;
+        this.description = description;
+    }
+
     public RealmSql(String tittle) {
         this.tittle = tittle;
     }
+
 }

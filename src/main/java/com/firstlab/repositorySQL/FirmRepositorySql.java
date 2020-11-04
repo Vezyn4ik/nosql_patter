@@ -10,9 +10,13 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface FirmRepositorySql extends JpaRepository<FirmSql, Long> {
+
+
+    Optional<FirmSql> findByName(String name);
 
     @Query(value = "select * from Firm_Sql f", nativeQuery = true)
     List<FirmSql> findAll();

@@ -1,19 +1,26 @@
 package com.firstlab.jpa;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+
+import javax.persistence.Column;
 
 @Document(collection = "Expenditures")
 public class Expenditure {
     @Id
     private String id;
 
+    @Indexed(unique=true)
     @Field(value = "tittle")
     private String tittle;
 
     @Field(value = "money")
     private Integer money;
+
+    @Field(value = "description")
+    private String description;
 
     @Field(value = "firm")
     private Firm firm;
@@ -24,6 +31,22 @@ public class Expenditure {
     public Expenditure(String tittle, Integer money) {
         this.tittle = tittle;
         this.money = money;
+    }
+
+    public Expenditure(String tittle, Integer money, String description, Firm firm, Realm realm) {
+        this.tittle = tittle;
+        this.money = money;
+        this.description = description;
+        this.firm = firm;
+        this.realm = realm;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getId() {

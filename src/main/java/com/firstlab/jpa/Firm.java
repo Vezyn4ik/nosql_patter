@@ -2,6 +2,7 @@ package com.firstlab.jpa;
 
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -11,7 +12,7 @@ public class Firm {
 
     @Id
     private String id;
-
+    @Indexed(unique=true)
     @Field(value = "name")
     private String name;
 
@@ -48,6 +49,15 @@ public class Firm {
     public Firm(String name, String address, String contactNumber, String manager, Integer year) {
         this.name = name;
         this.address = address;
+        this.contactNumber = contactNumber;
+        this.manager = manager;
+        this.year = year;
+    }
+
+    public Firm(String name, String address, Long in, String contactNumber, String manager, Integer year) {
+        this.name = name;
+        this.address = address;
+        this.in = in;
         this.contactNumber = contactNumber;
         this.manager = manager;
         this.year = year;
