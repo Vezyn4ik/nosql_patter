@@ -1,6 +1,7 @@
 package com.firstlab.jpa;
 
 
+import com.firstlab.memento.Memento;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -30,6 +31,29 @@ public class Firm {
 
     @Field(value = "year")
     private Integer year;
+
+    public void setState(Firm f) {
+        this.name = f.getName();
+        this.address = f.getAddress();
+        this.in = f.getIn();
+        this.contactNumber = f.getContactNumber();
+        this.manager = f.getManager();
+        this.year = f.getYear();
+    }
+
+    public Memento saveState() {
+        return new Memento(this);
+    }
+
+    public void restoreState(Memento memento) {
+        Firm f=memento.getFirm();
+        this.name = f.getName();
+        this.address = f.getAddress();
+        this.in = f.getIn();
+        this.contactNumber = f.getContactNumber();
+        this.manager = f.getManager();
+        this.year = f.getYear();
+    }
 
     public Firm() {
     }

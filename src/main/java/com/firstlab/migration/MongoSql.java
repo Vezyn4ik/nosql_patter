@@ -93,11 +93,15 @@ public class MongoSql {
 
     }
     public FirmSql convertFirm(Firm mongo){
-        return new FirmSql(mongo.getName(),mongo.getAddress(),mongo.getContactNumber(),
+        FirmSql f = new FirmSql(mongo.getName(),mongo.getAddress(),mongo.getContactNumber(),
                 mongo.getManager(),mongo.getYear(),mongo.getIn());
+        firmRepositorySql.save(f);
+        return f;
     }
     public RealmSql convertRealm(Realm mongo){
-        return new RealmSql(mongo.getTittle(),mongo.getDescription());
+        RealmSql r= new RealmSql(mongo.getTittle(),mongo.getDescription());
+        realmRepositorySql.save(r);
+        return r;
     }
     public StaffSql convertStaff(Staff mongo){
         Optional<FirmSql> f=firmRepositorySql.findByName((mongo.getFirm()).getName());

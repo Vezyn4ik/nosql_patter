@@ -1,5 +1,11 @@
 package com.firstlab;
 
+import com.firstlab.aggregation.ExpAg;
+import com.firstlab.aggregation.FirmAg;
+import com.firstlab.aggregation.StaffAgg;
+import com.firstlab.aggregation.StaffAggOcupation;
+import com.firstlab.aggregation.methods.ExpenditureMethods;
+import com.firstlab.aggregation.methods.StaffMethods;
 import com.firstlab.jpa.Expenditure;
 import com.firstlab.jpa.Firm;
 import com.firstlab.jpa.Realm;
@@ -12,8 +18,10 @@ import com.firstlab.map.Mapper;
 import com.firstlab.map.create.CreateExpenditureMapper;
 import com.firstlab.map.create.CreateFirmMapper;
 import com.firstlab.map.create.CreateMapper;
+import com.firstlab.memento.Caretaker;
 import com.firstlab.migration.MongoSql;
 import com.firstlab.migration.SqlMongo;
+import com.firstlab.observer.ObjectObservable;
 import com.firstlab.repository.ExpenditureRepository;
 import com.firstlab.repository.FirmRepository;
 import com.firstlab.repository.RealmRepository;
@@ -27,9 +35,10 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 //@EnableMongoRepositories(basePackageClasses = FirmRepository.class) //,RealmRepository.class,ExpenditureRepository.class)
 //@EnableJpaRepositories(basePackageClasses = FirmRepositorySql.class)
@@ -43,7 +52,7 @@ public class FirstlabApplication implements CommandLineRunner {
     private ExpenditureRepository expenditureRepository;
     @Autowired
     private StaffRepository staffRepository;
-    
+
     @Autowired
     private FirmRepositorySql firmRepositorySql;
     @Autowired
@@ -52,7 +61,7 @@ public class FirstlabApplication implements CommandLineRunner {
     private RealmRepositorySql realmRepositorySql;
     @Autowired
     private StaffRepositorySql staffRepositorySql;
-    
+
     public static void main(String[] args) {
         SpringApplication.run(FirstlabApplication.class, args);
     }
@@ -216,10 +225,10 @@ firmRepository.insert(new Firm.Builder("АВТОМАГИСТРАЛЬ", (long) 24
                 .realm(new Realm.Builder("Инфраструктура").build()).build());
 
         staffRepository.save(new Staff("Vlad", "manager", "vlad@nure.ua", (long)125323, 50000, "descr",f));
-*/
+
         MongoRepository mongoRepositories[]={firmRepository,realmRepository,expenditureRepository,staffRepository};
         JpaRepository jpaRepositories[]={firmRepositorySql,realmRepositorySql,expenditureRepositorySql,staffRepositorySql};
-       /* MongoSql test = new MongoSql(firmRepository,realmRepository,expenditureRepository,staffRepository,
+        MongoSql test = new MongoSql(firmRepository,realmRepository,expenditureRepository,staffRepository,
                 firmRepositorySql,expenditureRepositorySql,realmRepositorySql,staffRepositorySql);
         test.convertMongoToSql(mongoRepositories);
 
@@ -233,9 +242,175 @@ firmRepository.insert(new Firm.Builder("АВТОМАГИСТРАЛЬ", (long) 24
                 firm(f).realm(r).build());
 
         staffRepositorySql.save(new StaffSql("Василий", "manager", "vlad@nure.ua", (long)125323, 50000, "descr",f));
-      */ SqlMongo test = new SqlMongo(firmRepository,realmRepository,expenditureRepository,staffRepository,
+       SqlMongo test = new SqlMongo(firmRepository,realmRepository,expenditureRepository,staffRepository,
                 firmRepositorySql,expenditureRepositorySql,realmRepositorySql,staffRepositorySql);
         test.convertSqlToMongo(jpaRepositories);
-}
+        */
 
-}
+        // migration();
+       //replication();
+       // observer();
+      //  memento();
+        aggregation();
+
+    }
+
+    void migration() {
+        MongoRepository mongoRepositories[] = {firmRepository, realmRepository, expenditureRepository, staffRepository};
+        JpaRepository jpaRepositories[] = {firmRepositorySql, realmRepositorySql, expenditureRepositorySql, staffRepositorySql};
+        MongoSql test = new MongoSql(firmRepository, realmRepository, expenditureRepository, staffRepository,
+                firmRepositorySql, expenditureRepositorySql, realmRepositorySql, staffRepositorySql);
+        test.convertMongoToSql(mongoRepositories);
+
+        SqlMongo test2 = new SqlMongo(firmRepository, realmRepository, expenditureRepository, staffRepository,
+                firmRepositorySql, expenditureRepositorySql, realmRepositorySql, staffRepositorySql);
+        test2.convertSqlToMongo(jpaRepositories);
+    }
+
+    void replication() throws Exception {
+        firmRepository.deleteAll();
+        long startTime = System.nanoTime();
+        for (int i = 0; i < 10000; i++) {
+            firmRepository.save(new Firm.Builder("АВТОМАГИСТРАЛЬ" + i, (long) 241575 + i, "Николай Тищук").contactNumber("+380950751655").build());
+        }
+        long endTime = System.nanoTime();
+        System.out.println("Insert: " + (double) (endTime - startTime) / 1000000000);
+        startTime = System.nanoTime();
+        List<Firm> firms = firmRepository.findAll();
+        endTime = System.nanoTime();
+        System.out.println("Select: " + (double) (endTime - startTime) / 1000000000);
+    }
+
+    void observer() {
+        ObjectObservable objectObservable = new ObjectObservable();
+        objectObservable.registerObserver(SingletonLog.getInstance());
+
+        firmRepository.save(new Firm.Builder("АВТОМАГИСТРАЛЬ_Укр", (long) 241575, "Николай Тищук").contactNumber("+380950751655").build());
+        objectObservable.notifyObservers("insert", "firm");
+
+        realmRepository.insert(new Realm.Builder("Инфраструктура_Укр")
+                .description(" комплекс взаимосвязанных обслуживающих структур обеспечивающих основу функционирования системы").build());
+        objectObservable.notifyObservers("insert", "realm");
+
+        expenditureRepository.insert(new Expenditure.Builder("Расходы на постройку дороги на участке Н-3 Днепр — Решетиловка", 30101).
+                firm(new Firm.Builder("АВТОМАГИСТРАЛЬ-Центр", (long) 241745765, "Николай Тимофеев").address("Киев, ул. Воробина").build())
+                .realm(new Realm.Builder("Инфраструктура_Запад").build()).build());
+        objectObservable.notifyObservers("insert", "Expenditure");
+        firmRepository.deleteFirmByInLessThan((long) 24176);
+        objectObservable.notifyObservers("delete", "firm");
+        firmRepository.update("АВТОМАГИСТРАЛЬ-ЮГ", "Строим дороги.");
+        objectObservable.notifyObservers("update", "firm");
+        System.out.println(SingletonLog.getInstance().getAllActions());
+    }
+
+    void memento() {
+        Caretaker caretaker = new Caretaker();
+        Firm f = new Firm.Builder("Memento", (long) 241575, "Николай Тищук").contactNumber("+380950751655").build();
+        firmRepository.insert(f);
+        caretaker.addMemento(f.saveState());
+        f.setYear(2016);
+        firmRepository.update(f);
+        caretaker.addMemento(f.saveState());
+        f.setContactNumber("+380950661764");
+        firmRepository.update(f);
+        caretaker.addMemento(f.saveState());
+        f.setManager("Виталий Бобриков");
+        firmRepository.update(f);
+        caretaker.addMemento(f.saveState());
+        f.restoreState(caretaker.getMemento(1));
+        System.out.println(f.toString());
+    }
+
+    void aggregation() {
+        StaffMethods sm = new StaffMethods(staffRepository,firmRepository);
+        ExpenditureMethods em=new ExpenditureMethods(expenditureRepository,firmRepository);
+
+        long startTime = System.nanoTime();
+                for (StaffAgg staff : staffRepository.maxSalaryFirm()) {
+            System.out.println(staff);
+        }
+       long endTime = System.nanoTime();
+        System.out.println((double) (endTime - startTime) / 1000000000);
+
+
+        startTime = System.nanoTime();
+        for (StaffAgg staff : sm.maxSalaryFirmWithoutAggregation()) {
+            System.out.println(staff);
+        }
+        endTime = System.nanoTime();
+        System.out.println((double) (endTime - startTime) / 1000000000);
+
+        startTime = System.nanoTime();
+        for (StaffAggOcupation staff : staffRepository.countOccupation()) {
+            System.out.println(staff);
+        }
+        endTime = System.nanoTime();
+        System.out.println((double) (endTime - startTime) / 1000000000);
+
+
+        startTime = System.nanoTime();
+        for (StaffAggOcupation staff : sm.countOccupationWithoutAggregation()) {
+            System.out.println(staff);
+        }
+        endTime = System.nanoTime();
+        System.out.println((double) (endTime - startTime) / 1000000000);
+
+        startTime = System.nanoTime();
+        System.out.println(staffRepository.avgSalary());
+         endTime = System.nanoTime();
+        System.out.println((double) (endTime - startTime) / 1000000000);
+
+        startTime = System.nanoTime();
+        System.out.println(sm.avgSalaryWithoutAggregation());
+        endTime = System.nanoTime();
+        System.out.println((double) (endTime - startTime) / 1000000000);
+
+         startTime = System.nanoTime();
+        for (ExpAg expAg : expenditureRepository.sumLostMoneyFirm()) {
+            System.out.println(expAg);
+        }
+         endTime = System.nanoTime();
+        System.out.println((double) (endTime - startTime) / 1000000000);
+
+
+        startTime = System.nanoTime();
+        for (ExpAg expAg : em.sumLostMoneyFirmWithoutAggregation()) {
+            System.out.println(expAg);
+        }
+        endTime = System.nanoTime();
+        System.out.println((double) (endTime - startTime) / 1000000000);
+
+
+        startTime = System.nanoTime();
+        for (ExpAg expAg : expenditureRepository.maxLostMoneyFirm()) {
+            System.out.println(expAg);
+        }
+        endTime = System.nanoTime();
+        System.out.println((double) (endTime - startTime) / 1000000000);
+
+
+        startTime = System.nanoTime();
+        for (ExpAg expAg : em.maxLostMoneyFirmWithoutAggregation()) {
+            System.out.println(expAg);
+        }
+        endTime = System.nanoTime();
+        System.out.println((double) (endTime - startTime) / 1000000000);
+
+
+        startTime = System.nanoTime();
+        for (Expenditure expenditure : expenditureRepository.matchFirmName()) {
+            System.out.println(expenditure);
+        }
+        endTime = System.nanoTime();
+        System.out.println((double) (endTime - startTime) / 1000000000);
+
+
+        startTime = System.nanoTime();
+        for (Expenditure expenditure : expenditureRepository.findAllByFirm(firmRepository.findByName("АВТОМАГИСТРАЛЬ-Север3").get())) {
+            System.out.println(expenditure);
+        }
+        endTime = System.nanoTime();
+        System.out.println((double) (endTime - startTime) / 1000000000);
+
+    }
+    }

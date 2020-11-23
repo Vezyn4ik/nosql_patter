@@ -1,9 +1,12 @@
 package com.firstlab;
 
+import com.firstlab.memento.Memento;
+import com.firstlab.observer.Observer;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class SingletonLog {
+public class SingletonLog  implements Observer {
     private static SingletonLog instance;
     private List<String> actions = new ArrayList<String>();
 
@@ -27,6 +30,11 @@ public class SingletonLog {
 
     public String getAllActions() {
         return actions.toString();
+    }
+
+    @Override
+    public void update(String action, String table) {
+        SingletonLog.getInstance().addAction(action+" "+table);
     }
 
 }
